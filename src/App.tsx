@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, Typography, List, ListItem, ListItemText, Grid } from '@mui/material';
+import { Client } from '@notionhq/client';
+import config from '../config.json';  // Import the configuration
 
 type ImportanceUrgency = 1 | -1 | undefined;
 
@@ -25,8 +27,44 @@ const fetchNotionPages = (): Promise<Task[]> => {
   });
 };
 
+// Initializing a client
+const notion = new Client({
+  auth: config.notion_api_key,
+})
+
+const realFetchNotionPages = async (): Promise<Task[]> => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+
+    const response = await notion.databases.query({
+      database_id: config.notion_db_id,
+      filter: {
+        property: "Action Date",
+        date: {
+          equals: today,
+        },
+      },
+    });
+
+    console.log(response)
+    return response.results.map((page: any) => ({
+      id: page.id,
+      title: page.properties.Name.title[0]?.plain_text || 'Untitled',
+      importance: page.properties.Importance.select?.name === 'High' ? 1 : -1,
+      urgency: page.properties.Urgency.select?.name === 'High' ? 1 : -1,
+    }));
+  } catch (error) {
+    console.error('Error fetching Notion pages:', error);
+    return [];
+  }
+};
+
 const ImportanceUrgencyGraph: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    realFetchNotionPages()
+  }, []);
 
   useEffect(() => {
     fetchNotionPages().then(setTasks);
