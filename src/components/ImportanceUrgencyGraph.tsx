@@ -1,93 +1,41 @@
-import React, { useState, useEffect } from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, Typography, List, ListItem, ListItemText, Grid } from '@mui/material';
-import { Client } from '@notionhq/client';
-import config from '../config.json';  // Import the configuration
+import { Task } from '@/types';
 
-type ImportanceUrgency = 1 | -1 | undefined;
-
-interface Task {
-  id: number;
-  title: string;
-  importance: ImportanceUrgency;
-  urgency: ImportanceUrgency;
+interface ImportanceUrgencyGraphProps {
+  initialTasks: Task[];
 }
 
-// Mock function to simulate fetching data from Notion API
-const fetchNotionPages = (): Promise<Task[]> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([
-        { id: 1, title: 'Task 1', importance: 1, urgency: -1 },
-        { id: 2, title: 'Task 2', importance: -1, urgency: 1 },
-        { id: 3, title: 'Task 3', importance: 1, urgency: 1 },
-        { id: 4, title: 'Task 4', importance: undefined, urgency: undefined },
-        { id: 5, title: 'Task 5', importance: -1, urgency: -1 },
-      ]);
-    }, 1000);
-  });
-};
+const ImportanceUrgencyGraph: React.FC<ImportanceUrgencyGraphProps> = ({ initialTasks }) => {
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
 
-// Initializing a client
-const notion = new Client({
-  auth: config.notion_api_key,
-})
-
-const realFetchNotionPages = async (): Promise<Task[]> => {
-  try {
-    const today = new Date().toISOString().split('T')[0];
-
-    const response = await notion.databases.query({
-      database_id: config.notion_db_id,
-      filter: {
-        property: "Action Date",
-        date: {
-          equals: today,
-        },
-      },
-    });
-
-    console.log(response)
-    return response.results.map((page: any) => ({
-      id: page.id,
-      title: page.properties.Name.title[0]?.plain_text || 'Untitled',
-      importance: page.properties.Importance.select?.name === 'High' ? 1 : -1,
-      urgency: page.properties.Urgency.select?.name === 'High' ? 1 : -1,
-    }));
-  } catch (error) {
-    console.error('Error fetching Notion pages:', error);
-    return [];
-  }
-};
-
-const ImportanceUrgencyGraph: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-
-  useEffect(() => {
-    realFetchNotionPages()
-  }, []);
-
-  useEffect(() => {
-    fetchNotionPages().then(setTasks);
-  }, []);
-
-  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, id: number) => {
-    e.dataTransfer.setData('text/plain', id.toString());
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, id: string) => {
+    e.dataTransfer.setData('text/plain', id);
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>, quadrant: { importance: ImportanceUrgency, urgency: ImportanceUrgency }) => {
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>, quadrant: { importance: number, urgency: number }) => {
     e.preventDefault();
-    const id = parseInt(e.dataTransfer.getData('text'));
+    const id = e.dataTransfer.getData('text');
     const newTasks = tasks.map(task =>
       task.id === id ? { ...task, ...quadrant } : task
     );
     setTasks(newTasks);
+
+    // Update the task in Notion
+    await fetch('/api/updateTask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, ...quadrant }),
+    });
   };
 
-  const renderQuadrant = (title: string, importance: ImportanceUrgency, urgency: ImportanceUrgency) => (
+  const renderQuadrant = (title: string, importance: number, urgency: number) => (
     <Card
       sx={{
         height: '100%',
