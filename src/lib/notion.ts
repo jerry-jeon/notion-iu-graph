@@ -42,7 +42,19 @@ export async function getTasks(): Promise<Task[]> {
   return response.results.map((page: any) => ({
     id: page.id,
     title: page.properties.Name.title[0]?.plain_text || 'Untitled',
-    importance: page.properties.Importance.select?.name === 'High' ? 1 : -1,
-    urgency: page.properties.Urgency.select?.name === 'High' ? 1 : -1,
+    importance: mapImportance(page.properties.Importance?.select?.name),
+    urgency: mapUrgency(page.properties.Urgency?.select?.name),
   }));
+}
+
+function mapImportance(value: string | undefined): number | undefined {
+  if (value === 'High') return 1;
+  if (value === 'Low') return -1;
+  return undefined;
+}
+
+function mapUrgency(value: string | undefined): number | undefined {
+  if (value === 'High') return 1;
+  if (value === 'Low') return -1;
+  return undefined;
 }
