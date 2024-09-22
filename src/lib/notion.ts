@@ -1,18 +1,41 @@
 import { Client } from '@notionhq/client';
-import { Task } from '@/types';
+import { Task } from '../types';
 
 const notion = new Client({ auth: process.env.NOTION_TOKEN });
 
 export async function getTasks(): Promise<Task[]> {
-  const today = new Date().toISOString().split('T')[0];
+  // Get current date in system timezone
+  const now = new Date();
+
+  // Format the date to YYYY-MM-DD in the system timezone
+  const today = new Intl.DateTimeFormat('en-CA', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+  }).format(now);
+
+  // Get the timezone offset
+  const timeZoneOffset = -now.getTimezoneOffset() / 60;
+  const timeZoneString = timeZoneOffset >= 0 ? `+${String(timeZoneOffset).padStart(2, '0')}:00` : `-${String(Math.abs(timeZoneOffset)).padStart(2, '0')}:00`;
 
   const response = await notion.databases.query({
     database_id: process.env.NOTION_DATABASE_ID!,
     filter: {
-      property: "Action Date",
-      date: {
-        equals: today,
-      },
+      and: [
+        {
+          property: "Action Date",
+          date: {
+            on_or_after: today,
+          },
+        },
+        {
+          property: "Action Date",
+          date: {
+            before: `${today}T23:59:59${timeZoneString}`,
+          },
+        },
+      ],
     },
   });
 
