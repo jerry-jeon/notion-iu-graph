@@ -1,6 +1,11 @@
 import { Client } from '@notionhq/client';
 import { Task } from '../types';
 
+// Use .env.local
+let dotenv = require('dotenv');
+dotenv.config();
+dotenv.config({ path: `.env.local`, override: true });
+
 const notion = new Client({ auth: process.env.NOTION_TOKEN });
 
 export async function getTasks(): Promise<Task[]> {
