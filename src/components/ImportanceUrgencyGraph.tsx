@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, Typography, List, ListItem, ListItemText, Grid } from '@mui/material';
+import { Box, Card, CardContent, CardHeader, Typography, List } from '@mui/material';
 import { Task } from '@/types';
 import TaskListItem from "@/components/TaskListItem";
 
@@ -79,32 +79,80 @@ interface ImportanceUrgencyGraphProps {
     </Card>
   );
 
-  return (
-    <div style={{ width: '100%', height: '100vh', padding: '16px' }}>
-      <Typography variant="h4" gutterBottom>Importance-Urgency Graph</Typography>
-      <Grid container spacing={2} style={{ height: 'calc(100% - 48px)' }}>
-        <Grid item xs={9}>
-          <Grid container spacing={2} style={{ height: '100%' }}>
-            <Grid item xs={6} style={{ height: '50%' }}>
-              {renderQuadrant('Important & Urgent', 1, 1)}
-            </Grid>
-            <Grid item xs={6} style={{ height: '50%' }}>
-              {renderQuadrant('Important & Not Urgent', 1, -1)}
-            </Grid>
-            <Grid item xs={6} style={{ height: '50%' }}>
-              {renderQuadrant('Not Important & Urgent', -1, 1)}
-            </Grid>
-            <Grid item xs={6} style={{ height: '50%' }}>
-              {renderQuadrant('Not Important & Not Urgent', -1, -1)}
-            </Grid>
-          </Grid>
-        </Grid>
-        <Grid item xs={3}>
-          {renderUndefinedList()}
-        </Grid>
-      </Grid>
-    </div>
-  );
+    return (
+        <Box sx={{ width: '100%', height: '100vh', padding: '16px', boxSizing: 'border-box' }}>
+          <Typography variant="h4" gutterBottom>
+            Importance-Urgency Graph
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2, height: 'calc(100% - 48px)' }}>
+            {/* Main Quadrants */}
+            <Box sx={{ flex: 3, display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}>
+              {/* Top Quadrants */}
+              <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
+                <Box
+                    sx={{
+                      flex: 1,
+                      overflow: 'auto',
+                      backgroundColor: '#f5f5f5', // Optional: Add a background color
+                      padding: 1,
+                      borderRadius: 1,
+                    }}
+                >
+                  {renderQuadrant('Important & Urgent', 1, 1)}
+                </Box>
+                <Box
+                    sx={{
+                      flex: 1,
+                      overflow: 'auto',
+                      backgroundColor: '#f5f5f5',
+                      padding: 1,
+                      borderRadius: 1,
+                    }}
+                >
+                  {renderQuadrant('Important & Not Urgent', 1, -1)}
+                </Box>
+              </Box>
+              {/* Bottom Quadrants */}
+              <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
+                <Box
+                    sx={{
+                      flex: 1,
+                      overflow: 'auto',
+                      backgroundColor: '#f5f5f5',
+                      padding: 1,
+                      borderRadius: 1,
+                    }}
+                >
+                  {renderQuadrant('Not Important & Urgent', -1, 1)}
+                </Box>
+                <Box
+                    sx={{
+                      flex: 1,
+                      overflow: 'auto',
+                      backgroundColor: '#f5f5f5',
+                      padding: 1,
+                      borderRadius: 1,
+                    }}
+                >
+                  {renderQuadrant('Not Important & Not Urgent', -1, -1)}
+                </Box>
+              </Box>
+            </Box>
+            {/* Undefined List */}
+            <Box
+                sx={{
+                  flex: 1,
+                  overflow: 'auto',
+                  backgroundColor: '#e1f5fe', // Optional: Different background color for contrast
+                  padding: 1,
+                  borderRadius: 1,
+                }}
+            >
+              {renderUndefinedList()}
+            </Box>
+          </Box>
+        </Box>
+    );
 };
 
 export default ImportanceUrgencyGraph;
