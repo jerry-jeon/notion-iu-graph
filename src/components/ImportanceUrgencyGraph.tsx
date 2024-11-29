@@ -9,26 +9,7 @@ interface ImportanceUrgencyGraphProps {
   initialTasks: Task[];
 }
 
-const getBadgeColor = (status: Task['status']) => {
-  switch (status) {
-    case 'TODO':
-      return '#f44336'; // Red
-    case 'In progress':
-      return '#2196f3'; // Blue
-    case 'Pending':
-      return '#ff9800'; // Orange
-    case 'Reschedule':
-      return '#9e9e9e'; // Grey
-    case 'Done':
-      return '#4caf50'; // Green
-    case "Won't do":
-      return '#795548'; // Brown
-    default:
-      return '#000'; // Black as fallback
-  }
-};
-
-const ImportanceUrgencyGraph: React.FC<ImportanceUrgencyGraphProps> = ({ initialTasks }) => {
+  const ImportanceUrgencyGraph: React.FC<ImportanceUrgencyGraphProps> = ({ initialTasks }) => {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, id: string) => {

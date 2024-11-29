@@ -1,5 +1,5 @@
 import { Client } from '@notionhq/client';
-import { Task } from '../types';
+import {Task, TaskStatus} from '../types';
 
 // Use .env.local
 let dotenv = require('dotenv');
@@ -44,13 +44,18 @@ export async function getTasks(): Promise<Task[]> {
     },
   });
 
-  return response.results.map((page: any) => ({
-    id: page.id,
-    title: page.properties.Name.title[0]?.plain_text || 'Untitled',
-    importance: mapImportance(page.properties.Importance?.select?.name),
-    urgency: mapUrgency(page.properties.Urgency?.select?.name),
-    status: page.properties.Status?.select?.name,
-  }));
+  return response.results
+      .filter((page: any) => {
+        const status = page.properties.Status?.select?.name as TaskStatus | undefined;
+        return status !== 'Done' && status !== "Won't do";
+      })
+      .map((page: any) => ({
+        id: page.id,
+        title: page.properties.Name.title[0]?.plain_text || 'Untitled',
+        importance: mapImportance(page.properties.Importance?.select?.name),
+        urgency: mapUrgency(page.properties.Urgency?.select?.name),
+        status: page.properties.Status?.select?.name as TaskStatus,
+      }));
 }
 
 function mapImportance(value: string | undefined): number | undefined {
