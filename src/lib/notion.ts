@@ -49,6 +49,7 @@ export async function getTasks(): Promise<Task[]> {
     title: page.properties.Name.title[0]?.plain_text || 'Untitled',
     importance: mapImportance(page.properties.Importance?.select?.name),
     urgency: mapUrgency(page.properties.Urgency?.select?.name),
+    status: page.properties.Status?.select?.name,
   }));
 }
 

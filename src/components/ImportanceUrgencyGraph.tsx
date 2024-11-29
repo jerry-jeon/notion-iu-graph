@@ -3,10 +3,30 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, Typography, List, ListItem, ListItemText, Grid } from '@mui/material';
 import { Task } from '@/types';
+import TaskListItem from "@/components/TaskListItem";
 
 interface ImportanceUrgencyGraphProps {
   initialTasks: Task[];
 }
+
+const getBadgeColor = (status: Task['status']) => {
+  switch (status) {
+    case 'TODO':
+      return '#f44336'; // Red
+    case 'In progress':
+      return '#2196f3'; // Blue
+    case 'Pending':
+      return '#ff9800'; // Orange
+    case 'Reschedule':
+      return '#9e9e9e'; // Grey
+    case 'Done':
+      return '#4caf50'; // Green
+    case "Won't do":
+      return '#795548'; // Brown
+    default:
+      return '#000'; // Black as fallback
+  }
+};
 
 const ImportanceUrgencyGraph: React.FC<ImportanceUrgencyGraphProps> = ({ initialTasks }) => {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
@@ -49,22 +69,13 @@ const ImportanceUrgencyGraph: React.FC<ImportanceUrgencyGraphProps> = ({ initial
       <CardHeader title={title} titleTypographyProps={{ variant: 'h6' }} />
       <CardContent>
         {tasks.filter(task =>
-          task.importance === importance && task.urgency === urgency
+            task.importance === importance && task.urgency === urgency
         ).map(task => (
-          <div
-            key={task.id}
-            draggable
-            onDragStart={(e) => handleDragStart(e, task.id)}
-            style={{
-              backgroundColor: '#bbdefb',
-              padding: '8px',
-              margin: '4px',
-              borderRadius: '4px',
-              cursor: 'move'
-            }}
-          >
-            {task.title}
-          </div>
+            <TaskListItem
+                key={task.id}
+                task={task}
+                handleDragStart={handleDragStart}
+            />
         ))}
       </CardContent>
     </Card>
@@ -76,19 +87,11 @@ const ImportanceUrgencyGraph: React.FC<ImportanceUrgencyGraphProps> = ({ initial
       <CardContent>
         <List>
           {tasks.filter(task => task.importance === undefined || task.urgency === undefined).map(task => (
-            <ListItem
-              key={task.id}
-              draggable
-              onDragStart={(e) => handleDragStart(e, task.id)}
-              sx={{
-                backgroundColor: '#e1f5fe',
-                marginBottom: 1,
-                borderRadius: 1,
-                cursor: 'move'
-              }}
-            >
-              <ListItemText primary={task.title} />
-            </ListItem>
+              <TaskListItem
+                  key={task.id}
+                  task={task}
+                  handleDragStart={handleDragStart}
+              />
           ))}
         </List>
       </CardContent>
